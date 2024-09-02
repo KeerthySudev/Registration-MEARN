@@ -1,16 +1,13 @@
 'use client'
 
-import { Router } from '@/../node_modules/react-router-dom/dist/index';
 import { useState , useEffect} from 'react';
-import { useRouter } from 'next/navigation';
+import styles from './aadhar.module.css';
 
 const AadharVerificationPage = () => {
-//   const [aadharNumber, setAadharNumber] = useState('');
   const [message, setMessage] = useState('');
   const [aadharNumber, setAadharNumber] = useState('');
-  // const aadharNumber = '210488171985'
-  const router = useRouter();
   const storedEmail = sessionStorage.getItem('email');
+  const [messageType, setMessageType] = useState('');
 
 
   useEffect(() => {
@@ -48,26 +45,38 @@ const AadharVerificationPage = () => {
         const data = await response.json();
         if(data.responseData.data==true){
           setMessage('Aadhaar verified');
-          router.push('/address');
+          setMessageType('success');
         }
         else{
           setMessage('Invalid Aadhar');
+          setMessageType('error');
         }
       } else {
         const error = await response.text();
         setMessage(`Verification failed: ${error}`);
+        setMessageType('error');
       }
-    } catch (error) {
+    } catch (error:any) {
       setMessage(`An error occurred: ${error.message}`);
+      setMessageType('error');
     }
   };
 
   return (
-    <div>
-      <h1>Aadhar Verification</h1>
-      <button onClick={handleVerifyAadhar}>Verify Aadhar</button>
-      {message && <p>{message}</p>}
-      <a href='/address'>AAdhar</a>
+    <div className={styles.container}>
+      <h1 className={styles.header}>Aadhaar Verification</h1>
+      <p className={styles.description}>Verifying your Aadhaar number - {aadharNumber}</p>
+      <button onClick={handleVerifyAadhar} className={styles.button}>Verify Aadhaar</button>
+      {message && (
+        <p className={`${styles.message} ${messageType === 'success' ? styles.successMessage : styles.errorMessage}`}>
+          {message}
+        </p>
+      )}
+      {message.startsWith('Aadhaar verified') && (
+      <div className={styles.details}>
+        <a href='/address' className={styles.verifyButton}>Check address</a>
+      </div>
+    )} 
     </div>
     
   );

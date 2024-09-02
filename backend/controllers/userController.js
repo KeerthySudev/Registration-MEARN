@@ -17,6 +17,11 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
     // Create a new user instance
     const newUser = new User({ name, email, phone, dob, aadhaar });
 

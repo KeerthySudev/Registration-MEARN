@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import styles from './address.module.css';
+
 
 const AddressLookupPage = () => {
   const [message, setMessage] = useState('');
@@ -9,9 +10,17 @@ const AddressLookupPage = () => {
   const [district, setDistrict] = useState('');
   const [state, setState] = useState('');
   const [pin, setPin] = useState('');
-  const router = useRouter();
 
   const addressLookup = async () => {
+    if (!pin) {
+      setMessage('PIN code is required');
+      return;
+    }
+
+    if (!/^\d{6}$/.test(pin)) {
+      setMessage('PIN must be a 6-digit number');
+      return;
+    }
     try {
       const response = await fetch('http://127.0.0.1:5000/api/users/address', {
         method: 'POST',
@@ -48,28 +57,30 @@ const AddressLookupPage = () => {
   };
 
   return (
-    <div>
-      <h1>Address Lookup</h1>
-      <input
-        type="text"
-        placeholder="Enter PIN number"
-        value={pin}
-        onChange={(e) => setPin(e.target.value)} // Update the PIN state on user input
-      />
-      <button onClick={addressLookup}>PIN Number</button>
+    <div className={styles.container}>
+    <h1 className={styles.header}>Address Lookup</h1>
+    <input
+      type="text"
+      placeholder="Enter PIN number"
+      value={pin}
+      onChange={(e) => setPin(e.target.value)}
+      className={styles.input}
+    />
+    <button onClick={addressLookup} className={styles.button}>Check</button>
 
-      {message && <p>{message}</p>}
-      
-      {city && (
-        <div>
-          <h2>Address Details:</h2>
-          <p><strong>PinCode:</strong> {pin}</p>
-          <p><strong>City:</strong> {city}</p>
-          <p><strong>District:</strong> {district}</p>
-          <p><strong>State:</strong> {state}</p>
-        </div>
-      )}
-    </div>
+    {message && <p className={styles.message}>{message}</p>}
+
+    {city && (
+      <div className={styles.details}>
+        <h2>Address Details:</h2>
+        <p><strong>PinCode:</strong> {pin}</p>
+        <p><strong>City:</strong> {city}</p>
+        <p><strong>District:</strong> {district}</p>
+        <p><strong>State:</strong> {state}</p>
+        <a href='/authentication/PanCard' className={styles.verifyButton}>Verify PAN</a>
+      </div>
+    )}
+  </div>
   );
 };
 

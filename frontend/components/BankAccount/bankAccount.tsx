@@ -1,16 +1,35 @@
 'use client'
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import styles from './bank.module.css';
 
 const BankVerificationPage = () => {
   const [message, setMessage] = useState('');
   const [AcNo, setAcNo] = useState('');
   const [IFSC, setIFSC] = useState('');
   const [accountName, setAccountName] = useState('');
-  const router = useRouter();
 
   const VerifyBank = async () => {
+    if (!AcNo) {
+      setMessage('Account number is required');
+      return;
+    }
+    if (!IFSC) {
+      setMessage('IFSC code is required');
+      return;
+    }
+
+    if (!/^\d{14}$/.test(AcNo)) {
+      setMessage('Enter a valid account number');
+      return;
+    }
+
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(IFSC)) {
+      setMessage('Invalid IFSC code.');
+      return;
+    }
+
+
     try {
       const response = await fetch('http://127.0.0.1:5000/api/users/bank', {
         method: 'POST',
@@ -67,28 +86,30 @@ const BankVerificationPage = () => {
   };
 
   return (
-    <div>
-      <h1>Bank</h1>
+    <div className={styles.container}>
+      <h1 className={styles.header}>Bank</h1>
       <input
         type="text"
         placeholder="Enter Account number"
         value={AcNo}
-        onChange={(e) => setAcNo(e.target.value)} // Update the PIN state on user input
-      />
+        onChange={(e) => setAcNo(e.target.value)} 
+        className={styles.input}      />
       <input
         type="text"
         placeholder="Enter IFSC code"
         value={IFSC}
-        onChange={(e) => setIFSC(e.target.value)} // Update the PIN state on user input
+        onChange={(e) => setIFSC(e.target.value)} 
+        className={styles.input}
       />
-      <button onClick={VerifyBank}> Check </button>
+      <button onClick={VerifyBank} className={styles.button}> Check </button>
 
-      {message && <p>{message}</p>}
+      {message && <p className={styles.message}>{message}</p>}
 
       {accountName && (
-        <div>
-          <h2>Address Details:</h2>
+        <div className={styles.details}>
+          <h2>Account Details:</h2>
           <p><strong>AccountNAme:</strong> {accountName}</p>
+          <a href='/authentication/GST' className={styles.verifyButton}>Verify GST number</a>
         </div>
       )}
     </div>

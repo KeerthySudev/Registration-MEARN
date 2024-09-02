@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, PhoneAuthProvider, signInWithCredential } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { initializeApp, getApps, getApp } from "firebase/app";
+import styles from './verifyPhone.module.css';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCxHi6XDSgZ7YLORTNIJThYnlOlp-5q6jQ",
@@ -35,6 +36,7 @@ const OtpPage = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [isSendingOtp, setIsSendingOtp] = useState<boolean>(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState<boolean>(false);
+  const [messageType, setMessageType] = useState('');
   const router = useRouter();
   // const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
 
@@ -82,7 +84,6 @@ if (window.recaptchaVerifier) {
 }
 
   const handleSendOtp = async () => { 
-    console.log('heko')
     setIsSendingOtp(true);
 
     try {
@@ -102,14 +103,16 @@ if (window.recaptchaVerifier) {
       const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
       setVerificationId(confirmationResult.verificationId);
       setMessage('OTP sent successfully! Please check your number.');
-      console.log('OTP sent, verification ID:', confirmationResult.verificationId);
+      setMessageType('success');
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error sending OTP:', error.message);
         setMessage(`Error sending OTP: ${error.message}`);
+        setMessageType('error');
       } else {
         console.error('Unexpected error sending OTP:', error);
         setMessage('Error sending OTP: An unexpected error occurred.');
+        setMessageType('error');
       }
     } finally {
       setIsSendingOtp(false);
@@ -118,10 +121,24 @@ if (window.recaptchaVerifier) {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!otp) {
+      setMessage('OTP is required');
+      setMessageType('error');
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      setMessage('OTP must be a 6-digit number');
+      setMessageType('error');
+      return;
+    }
+
+    setMessage('');
     setIsVerifyingOtp(true);
 
     if (!verificationId) {
       setMessage('Verification ID not found.');
+      setMessageType('error');
       setIsVerifyingOtp(false);
       console.error('Verification ID is null or undefined.');
       return;
@@ -132,14 +149,17 @@ if (window.recaptchaVerifier) {
       const credential = PhoneAuthProvider.credential(verificationId, otp);
       await signInWithCredential(auth, credential);
       setMessage('OTP verified successfully!');
+      setMessageType('success');
       router.push('/verification/emailVerify');
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error verifying OTP:', error.message);
         setMessage(`Invalid OTP. Please try again. Error: ${error.message}`);
+        setMessageType('error');
       } else {
         console.error('Unexpected error verifying OTP:', error);
         setMessage('Invalid OTP. Please try again. An unexpected error occurred.');
+        setMessageType('error');
       }
     } finally {
       setIsVerifyingOtp(false);
@@ -147,20 +167,21 @@ if (window.recaptchaVerifier) {
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-      <h1>OTP Verification</h1>
-      <div id="recaptcha-container"></div>
+    <div className={styles.container}>
+      <h1 className={styles.header}>OTP Verification</h1>
+      <p className={styles.title}>Verify Your Mobile Number - {phoneNumber}</p>
+      <div id="recaptcha-container" className={styles.recaptchaContainer}></div>
       <button
         onClick={handleSendOtp}
         disabled={isSendingOtp}
-        style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', marginBottom: '20px' }}
+        className={`${styles.button} ${isSendingOtp ? styles.disabledButton : ''}`}
       >
         {isSendingOtp ? 'Sending OTP...' : 'Send OTP'}
       </button>
 
       <form onSubmit={handleVerifyOtp}>
-        <div style={{ marginBottom: '16px' }}>
-          <label htmlFor="otp" style={{ display: 'block', marginBottom: '8px' }}>Enter OTP:</label>
+        <div className={styles.formGroup}>
+          <label htmlFor="otp" className={styles.label}>Enter OTP:</label>
           <input
             id="otp"
             type="text"
@@ -168,19 +189,18 @@ if (window.recaptchaVerifier) {
             onChange={(e) => setOtp(e.target.value)}
             placeholder="Enter OTP"
             maxLength={6}
-            style={{ width: '100%', padding: '8px', fontSize: '16px' }}
+            className={styles.input}
           />
         </div>
-        {message && <p style={{ color: 'red' }}>{message}</p>}
+        {message && <p className={messageType === 'success' ? styles.successMessage : styles.errorMessage}>{message}</p>}
         <button
           type="submit"
           disabled={isVerifyingOtp}
-          style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}
+          className={`${styles.button} ${isVerifyingOtp ? styles.disabledButton : ''}`}
         >
           {isVerifyingOtp ? 'Verifying OTP...' : 'Verify OTP'}
         </button>
       </form>
-      <a href='/verification/emailVerify'>Email</a>
     </div>
   );
 };

@@ -1,14 +1,24 @@
 'use client'
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import styles from './GST.module.css';
 
 const GstVerificationPage = () => {
   const [message, setMessage] = useState('');
   const [GST, setGST] = useState('');
-  const router = useRouter();
 
   const VerifyGST = async () => {
+
+    if (!GST) {
+      setMessage('GST number is required');
+      return;
+    }
+
+    if (!/^[A-Z\d]{15}$/.test(GST)) {
+      setMessage('GST number is not in valid format');
+      return;
+    }
+
     try {
       const response = await fetch('http://127.0.0.1:5000/api/users/GST', {
         method: 'POST',
@@ -23,32 +33,39 @@ const GstVerificationPage = () => {
         const data = responseData.responseData.result.source_output
         console.log(data)
         if(data.gstin_status=="Active"){
-          setMessage('Verified')
+          setMessage('GST number verified')
         }
         else{
-          setMessage('Invalid')
+          setMessage('Invalid GST number ')
         }
       } else {
         const error = await response.text();
         setMessage(`Verification failed: ${error}`);
       }
-    } catch (error) {
+    } catch (error:any) {
       setMessage(`An error occurred: ${error.message}`);
     }
   };
 
   return (
-    <div>
-      <h1>GST</h1>
+    <div className={styles.container}>
+      <h1 className={styles.header}>GST</h1>
       <input
         type="text"
         placeholder="Enter GST number"
         value={GST}
-        onChange={(e) => setGST(e.target.value)} // Update the PIN state on user input
+        onChange={(e) => setGST(e.target.value)}
+        className={styles.input} // Update the PIN state on user input
       />
-      <button onClick={VerifyGST}>GST Number</button>
+      <button onClick={VerifyGST}  className={styles.button}>Check</button>
 
-      {message && <p>{message}</p>}
+      {message && <p className={styles.message}>{message}</p>}
+      {message.startsWith('GST number verified') && (
+      <div className={styles.details}>
+        <p>GST number verified</p>
+        <a href='/success' className={styles.verifyButton}>Complete verification</a>
+      </div>
+    )} 
     </div>
   );
 };

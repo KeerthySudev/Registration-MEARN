@@ -25,10 +25,21 @@ const RegistrationForm = () => {
 
   const validateForm = () => {
     const newErrors: any = {};
-    if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.name || !/^[A-Za-z\s]+$/.test(formData.name)) {
+      newErrors.name = 'Name must contain only letters and spaces';
+    }
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
-    if (!formData.phone || !/^\+91\d{10}$/.test(formData.phone)) newErrors.phone = 'Valid phone number is required';    
-    if (!formData.dob) newErrors.dob = 'Date of birth is required';
+    if (!formData.phone || !/^\+91\d{10}$/.test(formData.phone)) newErrors.phone = 'Valid phone number with code(+91) is required';    
+    const today = new Date();
+  const birthDate = new Date(formData.dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  if (!formData.dob || age < 18) {
+    newErrors.dob = 'You must be at least 18 years old';
+  }
     if (!formData.aadhaar || !/^\d{12}$/.test(formData.aadhaar)) newErrors.aadhaar = 'Valid Aadhaar number is required';
     return newErrors;
   };
@@ -76,50 +87,52 @@ const RegistrationForm = () => {
     <div className={styles.formContainer}>
       <h1>Register</h1>
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className={styles.formGroup}>
           <label>
             Name:
             <input type="text" name="name" value={formData.name} onChange={handleChange} />
-            {errors.name && <p>{errors.name}</p>}
+            {errors.name && <p className={styles.errorText}>{errors.name}</p>}
           </label>
         </div>
-        <div>
+        <div className={styles.formGroup}>
           <label>
             Email:
             <input type="email" name="email" value={formData.email} onChange={handleChange} />
-            {errors.email && <p>{errors.email}</p>}
+            {errors.email && <p className={styles.errorText}>{errors.email}</p>}
           </label>
         </div>
-        <div>
+        <div className={styles.formGroup}>
           <label>
             Phone:
             <input type="tel" name="phone" value={formData.phone} onChange={handleChange} />
-            {errors.phone && <p>{errors.phone}</p>}
+            {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
           </label>
         </div>
-        <div>
+        <div className={styles.formGroup}>
           <label>
             Date of Birth:
             <input type="date" name="dob" value={formData.dob} onChange={handleChange} />
-            {errors.dob && <p>{errors.dob}</p>}
+            {errors.dob && <p className={styles.errorText}>{errors.dob}</p>}
           </label>
         </div>
-        <div>
+        <div className={styles.formGroup}>
           <label>
             Aadhaar Number:
             <input type="text" name="aadhaar" value={formData.aadhaar} onChange={handleChange} />
-            {errors.aadhaar && <p>{errors.aadhaar}</p>}
+            {errors.aadhaar && <p className={styles.errorText}>{errors.aadhaar}</p>}
           </label>
         </div>
-        <button type="submit">Register</button>
+        <button type="submit" className={styles.submitButton}>Register</button>
       </form>
-      <a href='/verification/emailVerify'>Email</a>
-      <a href='/verification/mobileVerify'>Mobile</a>
-      <a href='/authentication/aadhar'>AADHAR</a>
-      <a href='/authentication/PanCard'>Pancard</a>
-      <a href='/authentication/GST'>GST</a>
-      <a href='/authentication/bank'>Bank</a>
-      <a href='/address'>Address</a>
+      {/* <div className={styles.links}>
+        <a href='/verification/emailVerify'>Email</a>
+        <a href='/verification/mobileVerify'>Mobile</a>
+        <a href='/authentication/aadhar'>AADHAR</a>
+        <a href='/authentication/PanCard'>Pancard</a>
+        <a href='/authentication/GST'>GST</a>
+        <a href='/authentication/bank'>Bank</a>
+        <a href='/address'>Address</a>
+      </div> */}
     </div>
   );
 };

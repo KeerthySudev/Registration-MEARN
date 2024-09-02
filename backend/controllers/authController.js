@@ -150,6 +150,7 @@ const verifyBank = async (req , res) => {
 
       const responseData = await apiResponse.json();
       console.log(responseData)
+     
 
       if (apiResponse.ok) {
         return res.status(200).json({ message: 'ID fetched successfully!',responseData });
@@ -187,6 +188,7 @@ const getBank = async (req , res) => {
 
       const responseData = await apiResponse.json();
       console.log(responseData)
+
 
       if (apiResponse.ok) {
         return res.status(200).json({ message: 'Bank details verified successfully!',responseData });
