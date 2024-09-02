@@ -12,7 +12,7 @@ const { addressLookup } = require('../controllers/addressController');
 
 const router = express.Router();
 
-// Define the route for user registration
+// Define the route for various functions
 router.post('/register', registerUser);
 router.get('/verify', mobileVerify);
 router.post('/emailVerify', emailVerify);

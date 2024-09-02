@@ -3,6 +3,7 @@
 import React from 'react';
 import styles from './success.module.css';
 
+//Final page after all the data is verified
 const SuccessPage = () => {
   return (
     <div className={styles.container}>

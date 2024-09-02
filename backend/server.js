@@ -22,9 +22,5 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 
-// const bodyParser = require('body-parser');
-// app.use(bodyParser.json());
-
-
 
 
